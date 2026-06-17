@@ -39,7 +39,7 @@
     --surface-2:     #1C2038;
     --border:        #272B4A;
     --text-primary:  #E8EAFA;
-    --text-secondary:#8890B8;
+    --text-secondary:#9AA0C8;
     --text-muted:    #4A5080;
     --accent:        #6B7EFF;
     --accent-light:  #1A2050;
@@ -135,8 +135,8 @@
   .msg.user .msg-bubble { background: var(--gradient); color: #fff; border-radius: var(--radius-md) 4px var(--radius-md) var(--radius-md); }
 
   /* TYPING */
-  .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 0.75rem 1rem; }
-  .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: bounce 1.2s infinite; }
+  .typing-indicator { display: flex; gap: 3px; align-items: center; padding: 0.5rem 0.75rem; }
+  .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); animation: bounce 1.2s infinite; }
   .typing-dot:nth-child(2) { animation-delay: 0.2s; }
   .typing-dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
@@ -263,21 +263,24 @@
   /* BENCHMARK */
   .benchmark-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); }
   .benchmark-title { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; }
-  .benchmark-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .benchmark-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   .benchmark-row:last-child { margin-bottom: 0; }
-  .benchmark-row-label { font-size: 13px; color: var(--text-secondary); width: 140px; flex-shrink: 0; }
-  .benchmark-bar-wrap { flex: 1; height: 8px; background: var(--surface-2); border-radius: 99px; overflow: visible; position: relative; }
-  .benchmark-bar-bg { height: 100%; border-radius: 99px; background: var(--surface-2); }
-  .benchmark-bar-avg { position: absolute; top: 0; height: 100%; border-radius: 99px; background: var(--border); transition: width 0.6s ease; }
-  .benchmark-bar-you { position: absolute; top: 0; height: 100%; border-radius: 99px; background: var(--gradient); transition: width 0.8s ease; }
-  .benchmark-marker { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--text-muted); border-radius: 1px; }
+  .benchmark-row-label { font-size: 13px; color: var(--text-secondary); width: 160px; flex-shrink: 0; }
+  .benchmark-bar-wrap { flex: 1; position: relative; display: flex; flex-direction: column; gap: 4px; }
+  .benchmark-bar-track { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; position: relative; }
+  .benchmark-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+  .benchmark-bar-fill.you { background: var(--gradient); }
+  .benchmark-bar-fill.avg { background: var(--border); }
+  .benchmark-bar-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; }
+  .benchmark-bar-label.you { color: var(--accent); }
+  .benchmark-bar-label.avg { color: var(--text-secondary); }
   .benchmark-scores { display: flex; gap: 16px; margin-left: 8px; flex-shrink: 0; }
-  .benchmark-score { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+  .benchmark-score { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
   .benchmark-score.you { color: var(--accent); }
-  .benchmark-score.avg { color: var(--text-muted); }
-  .benchmark-legend { display: flex; gap: 16px; margin-bottom: 1rem; }
-  .benchmark-legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
-  .benchmark-legend-dot { width: 10px; height: 4px; border-radius: 2px; }
+  .benchmark-score.avg { color: var(--text-secondary); }
+  .benchmark-legend { display: flex; gap: 16px; margin-bottom: 1.25rem; }
+  .benchmark-legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+  .benchmark-legend-dot { width: 12px; height: 4px; border-radius: 2px; }
   .benchmark-legend-dot.you { background: var(--gradient); }
   .benchmark-legend-dot.avg { background: var(--border); }
 
@@ -666,7 +669,7 @@
     const el = document.createElement('div');
     el.className = 'msg agent'; el.id = 'typing-indicator';
     el.innerHTML = `<div class="msg-avatar">CC</div>
-      <div class="msg-bubble" style="padding:0.75rem 1rem">
+      <div class="msg-bubble" style="padding:0.4rem 0.75rem;min-width:44px">
         <div class="typing-indicator">
           <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
         </div>
@@ -920,12 +923,18 @@
         <div class="benchmark-row">
           <span class="benchmark-row-label">${b.label} <span style="color:var(--text-muted);font-size:10px;font-family:var(--font-mono)">(n=${b.n})</span></span>
           <div class="benchmark-bar-wrap">
-            <div class="benchmark-bar-avg" style="width:${(b.avg/10*100).toFixed(1)}%"></div>
-            <div class="benchmark-bar-you" style="width:${(userScore/10*100).toFixed(1)}%"></div>
-          </div>
-          <div class="benchmark-scores">
-            <span class="benchmark-score you">${userScore.toFixed(1)}</span>
-            <span class="benchmark-score avg">${b.avg.toFixed(1)}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="benchmark-bar-track" style="flex:1">
+                <div class="benchmark-bar-fill you" style="width:${(userScore/10*100).toFixed(1)}%"></div>
+              </div>
+              <span class="benchmark-bar-label you">${userScore.toFixed(1)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="benchmark-bar-track" style="flex:1">
+                <div class="benchmark-bar-fill avg" style="width:${(b.avg/10*100).toFixed(1)}%"></div>
+              </div>
+              <span class="benchmark-bar-label avg">${b.avg.toFixed(1)}</span>
+            </div>
           </div>
         </div>`).join('');
 
