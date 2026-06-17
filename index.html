@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CyberCoach · Adaptive Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:            #F4F5FB;
+    --surface:       #FFFFFF;
+    --surface-2:     #ECEEF7;
+    --border:        #D8DCF0;
+    --text-primary:  #0F1340;
+    --text-secondary:#4A5080;
+    --text-muted:    #8890B8;
+    --accent:        #2D3FBE;
+    --accent-light:  #E0E4F9;
+    --accent-dark:   #1A2578;
+    --purple:        #7B2FBE;
+    --purple-light:  #F0E6FA;
+    --purple-dark:   #4A1580;
+    --amber:         #A05C10;
+    --amber-light:   #FEF0DC;
+    --gradient:      linear-gradient(135deg, #2D3FBE 0%, #7B2FBE 100%);
+    --gradient-soft: linear-gradient(135deg, #E0E4F9 0%, #F0E6FA 100%);
+    --shadow-sm:     0 1px 3px rgba(45,63,190,0.07), 0 1px 2px rgba(45,63,190,0.04);
+    --shadow-md:     0 4px 20px rgba(45,63,190,0.12);
+    --shadow-glow:   0 0 0 3px rgba(45,63,190,0.18);
+    --radius-sm:     6px;
+    --radius-md:     12px;
+    --radius-lg:     20px;
+    --font-sans:     'DM Sans', sans-serif;
+    --font-mono:     'DM Mono', monospace;
+  }
+  [data-theme="dark"] {
+    --bg:            #0B0D1A;
+    --surface:       #131629;
+    --surface-2:     #1C2038;
+    --border:        #272B4A;
+    --text-primary:  #E8EAFA;
+    --text-secondary:#8890B8;
+    --text-muted:    #4A5080;
+    --accent:        #6B7EFF;
+    --accent-light:  #1A2050;
+    --accent-dark:   #C0C8FF;
+    --purple:        #B06AE0;
+    --purple-light:  #2A1545;
+    --purple-dark:   #E8CCFF;
+    --amber:         #F0A030;
+    --amber-light:   #2A1C08;
+    --gradient:      linear-gradient(135deg, #6B7EFF 0%, #B06AE0 100%);
+    --gradient-soft: linear-gradient(135deg, #1A2050 0%, #2A1545 100%);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-brand { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.04em; }
+  .nav-brand span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .nav-controls { display: flex; align-items: center; gap: 8px; }
+  .lang-btn, .theme-btn {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    padding: 5px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: none;
+    color: var(--text-muted); cursor: pointer; letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+  .lang-btn.active { background: var(--gradient); color: #fff; border-color: transparent; }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* HERO */
+  .hero { max-width: 760px; margin: 0 auto; padding: 4rem 2rem 2rem; text-align: center; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+  .hero-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; line-height: 1.15; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 1rem; }
+  .hero-title em { font-style: italic; font-weight: 400; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-desc { font-size: 1.05rem; font-weight: 400; line-height: 1.75; color: var(--text-secondary); max-width: 520px; margin: 0 auto 2rem; }
+
+  /* PHASE INDICATOR */
+  .phase-strip { max-width: 800px; margin: 0 auto 1rem; padding: 0 2rem; display: flex; align-items: center; gap: 6px; }
+  .phase-dot { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 4px 12px; border-radius: 99px; background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); transition: all 0.3s; letter-spacing: 0.06em; white-space: nowrap; }
+  .phase-dot.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .phase-dot.done { background: var(--purple-light); color: var(--purple); border-color: transparent; }
+  .phase-sep { width: 16px; height: 1px; background: var(--border); flex-shrink: 0; }
+
+  /* CHAT */
+  .chat-section { max-width: 800px; margin: 0 auto; padding: 0 2rem 3rem; }
+  .chat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; display: flex; flex-direction: column; }
+  .chat-messages { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; min-height: 380px; max-height: 460px; overflow-y: auto; scroll-behavior: smooth; }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* COMPLETE BANNER — shown inside chat when done */
+  .complete-banner {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--gradient-soft); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 1rem 1.25rem;
+    margin-top: 0.5rem;
+  }
+  .complete-banner-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--gradient); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .complete-banner-icon svg { width: 18px; height: 18px; stroke: #fff; }
+  .complete-banner-text { flex: 1; }
+  .complete-banner-title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+  .complete-banner-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; }
+
+  /* MESSAGES */
+  .msg { display: flex; gap: 10px; align-items: flex-start; animation: fadeUp 0.25s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; }
+  .msg.agent .msg-avatar { background: var(--gradient); color: #fff; }
+  .msg.user .msg-avatar { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-secondary); }
+  .msg-bubble { max-width: 78%; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.9375rem; line-height: 1.6; white-space: pre-wrap; }
+  .msg.agent .msg-bubble { background: var(--surface-2); color: var(--text-primary); border-radius: 4px var(--radius-md) var(--radius-md) var(--radius-md); }
+  .msg.user .msg-bubble { background: var(--gradient); color: #fff; border-radius: var(--radius-md) 4px var(--radius-md) var(--radius-md); }
+
+  /* TYPING */
+  .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 0.75rem 1rem; }
+  .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+  /* INPUT */
+  .chat-input-area { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; background: var(--surface); }
+  .chat-input { flex: 1; font-family: var(--font-sans); font-size: 15px; padding: 0.7rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); resize: none; min-height: 44px; max-height: 120px; line-height: 1.5; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  .chat-input::placeholder { color: var(--text-muted); }
+  .chat-input:focus { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+  .send-btn { width: 44px; height: 44px; border-radius: var(--radius-md); border: none; background: var(--gradient); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 12px rgba(123,47,190,0.25); transition: box-shadow 0.15s, transform 0.1s; }
+  .send-btn:hover { box-shadow: 0 4px 20px rgba(123,47,190,0.35); }
+  .send-btn:active { transform: scale(0.96); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; }
+
+  /* CLOSED INPUT STATE */
+  .chat-closed { padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--surface); display: none; }
+  .chat-closed-msg { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.06em; text-align: center; }
+
+  /* RESULTS DIVIDER */
+  .results-divider {
+    max-width: 800px; margin: 0 auto 2rem; padding: 0 2rem;
+    display: none;
+  }
+  .results-divider.visible { display: block; }
+  .divider-inner {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+  .divider-badge {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    padding: 4px 12px; border-radius: 99px;
+    background: var(--purple-light); color: var(--purple);
+  }
+
+  /* WHAT HAPPENS NEXT — agent B narrative */
+  .agent-b-narrative {
+    max-width: 800px; margin: 0 auto 1.5rem; padding: 0 2rem;
+    display: none;
+  }
+  .agent-b-narrative.visible { display: block; }
+  .narrative-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .narrative-eyebrow { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+  .narrative-title { font-size: 1.1rem; font-weight: 300; color: var(--text-primary); letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+  .narrative-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem; }
+  .narrative-steps { display: flex; flex-direction: column; gap: 10px; }
+  .narrative-step { display: flex; align-items: flex-start; gap: 12px; }
+  .step-number { font-family: var(--font-mono); font-size: 11px; font-weight: 500; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; width: 20px; flex-shrink: 0; padding-top: 2px; }
+  .step-text { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; }
+  .step-text strong { color: var(--text-primary); font-weight: 500; }
+
+  /* RESULTS */
+  .results-section { max-width: 800px; margin: 0 auto; padding: 0 2rem 2rem; display: none; }
+  .results-section.visible { display: block; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; box-shadow: var(--shadow-sm); }
+  .stat-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .stat-value { font-family: var(--font-mono); font-size: 2rem; font-weight: 500; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+  .stat-value.remedial { background: linear-gradient(135deg, #A05C10, #BE4A2D); -webkit-background-clip: text; background-clip: text; }
+  .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .stat-profile-text { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin-top: 4px; }
+
+  .topics-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); }
+  .topics-title { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+  .topic-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: var(--font-mono); font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 99px; }
+  .chip.evaluated { background: var(--accent-light); color: var(--accent); }
+  .chip.improvement { background: var(--amber-light); color: var(--amber); }
+  .chip.none { background: var(--purple-light); color: var(--purple); }
+
+  /* LOADING RESULTS */
+  .results-loading { display: flex; align-items: center; gap: 12px; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; }
+  .loading-spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.06em; }
+
+  /* EMAIL PREVIEW */
+  .email-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; }
+  .email-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .email-header-left { display: flex; align-items: center; gap: 10px; }
+  .email-dot { width: 8px; height: 8px; border-radius: 50%; background: #34C759; }
+  .email-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .email-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 99px; background: var(--accent-light); color: var(--accent); }
+  .email-badge.remedial { background: var(--amber-light); color: var(--amber); }
+  .email-meta { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px; }
+  .email-meta strong { color: var(--text-primary); }
+  .email-body-wrap { padding: 1.5rem; font-size: 14px; line-height: 1.7; color: var(--text-primary); }
+  .email-body-wrap p { margin-bottom: 0.75rem; }
+  .email-body-wrap ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+  .email-body-wrap li { margin-bottom: 0.4rem; }
+  .email-body-wrap a { color: var(--accent); }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; margin-top: 2rem; }
+  .footer-stack { font-family: var(--font-mono); font-size: 11px; font-weight: 400; letter-spacing: 0.04em; color: var(--text-muted); }
+  .footer-stack span { color: var(--text-secondary); }
+
+  /* LOADING OVERLAY */
+  .poll-status { max-width: 800px; margin: 0 auto; padding: 0 2rem 1rem; display: none; }
+  .poll-status.visible { display: block; }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 1.25rem; }
+    .nav-brand { font-size: 11px; }
+    .hero { padding: 2.5rem 1.25rem 1.5rem; }
+    .chat-section, .results-section, .results-divider, .agent-b-narrative, .poll-status { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .phase-strip { padding: 0 1.25rem; overflow-x: auto; }
+    .chat-messages { min-height: 300px; max-height: 360px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><span>Christian Rojas</span> · Learning Architect</div>
+  <div class="nav-controls">
+    <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">◐</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <p class="eyebrow">CASE STUDY 03</p>
+  <h1 class="hero-title">Evaluate your<br><em>cybersecurity readiness</em><br>in conversation</h1>
+  <p class="hero-desc" id="hero-desc">A multi-agent adaptive system that profiles your role, generates situational scenarios, and delivers personalized feedback — all through a single conversation with CyberCoach.</p>
+</section>
+
+<div class="phase-strip">
+  <span class="phase-dot active" id="phase-1" data-en="Profiling" data-es="Perfilamiento">Profiling</span>
+  <div class="phase-sep"></div>
+  <span class="phase-dot" id="phase-2" data-en="Assessment" data-es="Evaluación">Assessment</span>
+  <div class="phase-sep"></div>
+  <span class="phase-dot" id="phase-3" data-en="Feedback" data-es="Retroalimentación">Feedback</span>
+  <div class="phase-sep"></div>
+  <span class="phase-dot" id="phase-4" data-en="Complete" data-es="Completado">Complete</span>
+</div>
+
+<section class="chat-section">
+  <div class="chat-card">
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-area" id="chat-input-area">
+      <textarea class="chat-input" id="chat-input" rows="1"
+        placeholder="Type your message..."
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="chat-closed" id="chat-closed">
+      <p class="chat-closed-msg" id="chat-closed-msg">ASSESSMENT COMPLETE · Results loading below</p>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER: separates chat from what the system does next -->
+<div class="results-divider" id="results-divider">
+  <div class="divider-inner">
+    <div class="divider-line"></div>
+    <span class="divider-label" id="divider-label">What happens next</span>
+    <div class="divider-line"></div>
+  </div>
+</div>
+
+<!-- AGENT B NARRATIVE -->
+<div class="agent-b-narrative" id="agent-b-narrative">
+  <div class="narrative-card">
+    <p class="narrative-eyebrow">ADMIN AGENT · Background execution</p>
+    <h2 class="narrative-title" id="narrative-title">The system is now acting on your results</h2>
+    <p class="narrative-desc" id="narrative-desc">While your conversation with CyberCoach just ended, a second agent has already been triggered. Here's what it's doing right now:</p>
+    <div class="narrative-steps" id="narrative-steps">
+      <div class="narrative-step">
+        <span class="step-number">01</span>
+        <span class="step-text" id="step-1"><strong>Reading your assessment record</strong> from the database — score, profile, topics evaluated, and areas to strengthen.</span>
+      </div>
+      <div class="narrative-step">
+        <span class="step-number">02</span>
+        <span class="step-text" id="step-2"><strong>Searching for curated resources</strong> aligned to your specific improvement areas or advanced topics based on your performance.</span>
+      </div>
+      <div class="narrative-step">
+        <span class="step-number">03</span>
+        <span class="step-text" id="step-3"><strong>Composing a personalized email</strong> with your score, recommendations, and links — written for your role and industry, not a template.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POLL STATUS -->
+<div class="poll-status" id="poll-status">
+  <div class="results-loading">
+    <div class="loading-spinner"></div>
+    <span class="loading-text" id="poll-text">RETRIEVING RESULTS FROM DATABASE...</span>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<section class="results-section" id="results-section">
+
+  <div class="results-grid">
+    <div class="stat-card">
+      <div class="stat-label" id="lbl-score">Final Score</div>
+      <div class="stat-value" id="stat-score">—</div>
+      <div class="stat-sub" id="lbl-score-sub">out of 10.0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" id="lbl-profile">Learner Profile</div>
+      <div class="stat-profile-text" id="stat-profile">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" id="lbl-outcome">Outcome</div>
+      <div class="stat-value" id="stat-outcome">—</div>
+      <div class="stat-sub" id="stat-outcome-sub">—</div>
+    </div>
+  </div>
+
+  <div class="topics-card">
+    <div class="topics-title" id="lbl-evaluated">EVALUATED TOPICS</div>
+    <div class="topic-chips" id="evaluated-chips"></div>
+  </div>
+
+  <div class="topics-card" id="improvement-card">
+    <div class="topics-title" id="lbl-improvement">AREAS TO STRENGTHEN</div>
+    <div class="topic-chips" id="improvement-chips"></div>
+  </div>
+
+  <!-- EMAIL PREVIEW -->
+  <div class="email-card" id="email-card">
+    <div class="email-header">
+      <div class="email-header-left">
+        <div class="email-dot"></div>
+        <span class="email-label" id="lbl-email">SIMULATED EMAIL · Sent via n8n + Gmail</span>
+      </div>
+      <span class="email-badge" id="email-type-badge">Advancement</span>
+    </div>
+    <div class="email-meta">
+      <div>To: <strong id="email-to">—</strong></div>
+      <div>Subject: <strong id="email-subject">—</strong></div>
+    </div>
+    <div class="email-body-wrap" id="email-body">—</div>
+  </div>
+
+</section>
+
+<footer>
+  <p class="footer-stack">
+    <span>Frontend</span> HTML · CSS · JS — GitHub Pages &nbsp;·&nbsp;
+    <span>DB</span> Supabase &nbsp;·&nbsp;
+    <span>Orchestration</span> n8n Cloud &nbsp;·&nbsp;
+    <span>LLM</span> Google Gemini &nbsp;·&nbsp;
+    <span>Fonts</span> DM Sans + DM Mono
+  </p>
+</footer>
+
+<script>
+  /* ── CONFIG ── */
+  const WEBHOOK_URL   = 'https://christian-rojas.app.n8n.cloud/webhook/cybersecurity-agent';
+  const SUPABASE_URL  = 'https://qwdjezkrxukxwlkdpwut.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3ZGplemtyeHVreHdsa2Rwd3V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDYzMTQsImV4cCI6MjA5NzI4MjMxNH0.DMeDWal9hKruzs1hXva0GeEJIA9WM2fKtM6Aq1wItQY';
+
+  /* ── STATE ── */
+  const sessionId = crypto.randomUUID();
+  let isWaiting   = false;
+  let currentLang = 'en';
+  let pollTimer   = null;
+  let pollAttempts = 0;
+  const MAX_POLLS  = 20;
+
+  /* ── I18N ── */
+  const T = {
+    en: {
+      heroDdesc: 'A multi-agent adaptive system that profiles your role, generates situational scenarios, and delivers personalized feedback — all through a single conversation with CyberCoach.',
+      placeholder: 'Type your message...',
+      closedMsg: 'ASSESSMENT COMPLETE · Results loading below',
+      divider: 'What happens next',
+      narrativeTitle: 'The system is now acting on your results',
+      narrativeDesc: 'While your conversation with CyberCoach just ended, a second agent has already been triggered. Here\'s what it\'s doing right now:',
+      step1: '<strong>Reading your assessment record</strong> from the database — score, profile, topics evaluated, and areas to strengthen.',
+      step2: '<strong>Searching for curated resources</strong> aligned to your specific improvement areas or advanced topics based on your performance.',
+      step3: '<strong>Composing a personalized email</strong> with your score, recommendations, and links — written for your role and industry, not a template.',
+      pollText: 'RETRIEVING RESULTS FROM DATABASE...',
+      score: 'Final Score', scoreSub: 'out of 10.0',
+      profile: 'Learner Profile', outcome: 'Outcome',
+      evaluated: 'EVALUATED TOPICS', improvement: 'AREAS TO STRENGTHEN',
+      email: 'SIMULATED EMAIL · Sent via n8n + Gmail',
+      advancement: 'Advancement', remedial: 'Remedial',
+      advOutcome: 'Advanced', advSub: 'pathway unlocked',
+      remOutcome: 'Remedial', remSub: 'retake scheduled',
+      noGaps: 'No gaps identified',
+      phases: ['Profiling','Assessment','Feedback','Complete'],
+    },
+    es: {
+      heroDesc: 'Un sistema multi-agente adaptativo que perfila tu rol, genera escenarios situacionales y entrega retroalimentación personalizada — en una sola conversación con CyberCoach.',
+      placeholder: 'Escribe tu mensaje...',
+      closedMsg: 'EVALUACIÓN COMPLETA · Resultados cargando abajo',
+      divider: 'Qué pasa ahora',
+      narrativeTitle: 'El sistema está actuando sobre tus resultados',
+      narrativeDesc: 'Mientras tu conversación con CyberCoach acaba de terminar, un segundo agente ya fue activado. Esto es lo que está haciendo ahora mismo:',
+      step1: '<strong>Leyendo tu registro de evaluación</strong> desde la base de datos — puntaje, perfil, temas evaluados y áreas a fortalecer.',
+      step2: '<strong>Buscando recursos curados</strong> alineados a tus áreas de mejora o temas avanzados según tu desempeño.',
+      step3: '<strong>Redactando un correo personalizado</strong> con tu puntaje, recomendaciones y recursos — escrito para tu rol e industria, no una plantilla.',
+      pollText: 'RECUPERANDO RESULTADOS DE LA BASE DE DATOS...',
+      score: 'Puntaje Final', scoreSub: 'sobre 10.0',
+      profile: 'Perfil', outcome: 'Resultado',
+      evaluated: 'TEMAS EVALUADOS', improvement: 'ÁREAS A FORTALECER',
+      email: 'CORREO SIMULADO · Enviado vía n8n + Gmail',
+      advancement: 'Avance', remedial: 'Remedial',
+      advOutcome: 'Avanzado', advSub: 'ruta desbloqueada',
+      remOutcome: 'Remedial', remSub: 'retoma programada',
+      noGaps: 'Sin brechas identificadas',
+      phases: ['Perfilamiento','Evaluación','Retroalimentación','Completado'],
+    }
+  };
+
+  function t(key) { return T[currentLang][key] || T['en'][key] || ''; }
+
+  /* ── LANG ── */
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    document.getElementById('hero-desc').textContent = t('heroDesc') || t('heroDesc');
+    document.getElementById('chat-input').placeholder = t('placeholder');
+    document.getElementById('chat-closed-msg').textContent = t('closedMsg');
+    document.getElementById('divider-label').textContent = t('divider');
+    document.getElementById('narrative-title').textContent = t('narrativeTitle');
+    document.getElementById('narrative-desc').textContent = t('narrativeDesc');
+    document.getElementById('step-1').innerHTML = t('step1');
+    document.getElementById('step-2').innerHTML = t('step2');
+    document.getElementById('step-3').innerHTML = t('step3');
+    document.getElementById('poll-text').textContent = t('pollText');
+    document.getElementById('lbl-score').textContent = t('score');
+    document.getElementById('lbl-score-sub').textContent = t('scoreSub');
+    document.getElementById('lbl-profile').textContent = t('profile');
+    document.getElementById('lbl-outcome').textContent = t('outcome');
+    document.getElementById('lbl-evaluated').textContent = t('evaluated');
+    document.getElementById('lbl-improvement').textContent = t('improvement');
+    document.getElementById('lbl-email').textContent = t('email');
+    T[lang].phases.forEach((label, i) => {
+      document.getElementById('phase-' + (i+1)).textContent = label;
+    });
+  }
+
+  /* ── THEME ── */
+  function toggleTheme() {
+    const dark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', dark ? '' : 'dark');
+  }
+
+  /* ── PHASE ── */
+  function setPhase(n) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('phase-' + i);
+      el.classList.remove('active','done');
+      if (i < n) el.classList.add('done');
+      else if (i === n) el.classList.add('active');
+    }
+  }
+
+  /* ── CHAT ── */
+  function appendMessage(role, text) {
+    const container = document.getElementById('chat-messages');
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + role;
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = role === 'agent' ? 'CC' : 'U';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = text.replace(/ASSESSMENT_COMPLETE/g,'').trim();
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function showCompleteBanner() {
+    const container = document.getElementById('chat-messages');
+    const banner = document.createElement('div');
+    banner.className = 'complete-banner';
+    banner.innerHTML = `
+      <div class="complete-banner-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="complete-banner-text">
+        <div class="complete-banner-title" id="banner-title">Assessment complete</div>
+        <div class="complete-banner-sub" id="banner-sub">YOUR RESULTS ARE BEING PROCESSED · SEE BELOW</div>
+      </div>`;
+    container.appendChild(banner);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function showTyping() {
+    const container = document.getElementById('chat-messages');
+    const el = document.createElement('div');
+    el.className = 'msg agent'; el.id = 'typing-indicator';
+    el.innerHTML = `<div class="msg-avatar">CC</div>
+      <div class="msg-bubble" style="padding:0.75rem 1rem">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        </div>
+      </div>`;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function lockChat() {
+    document.getElementById('chat-input-area').style.display = 'none';
+    document.getElementById('chat-closed').style.display = 'block';
+  }
+
+  function setInputDisabled(disabled) {
+    document.getElementById('chat-input').disabled = disabled;
+    document.getElementById('send-btn').disabled = disabled;
+    isWaiting = disabled;
+  }
+
+  function detectPhase(reply) {
+    const low = reply.toLowerCase();
+    if (low.includes('scenario') || low.includes('escenario') ||
+        low.includes('case 1') || low.includes('caso 1') ||
+        low.includes('question 1') || low.includes('pregunta 1')) setPhase(2);
+    else if (low.includes('your score') || low.includes('tu puntaje') ||
+             low.includes('final score') || low.includes('puntaje final') ||
+             low.includes('congratulations') || low.includes('felicitaciones') ||
+             low.includes('improvement') || low.includes('mejora')) setPhase(3);
+  }
+
+  async function sendMessage() {
+    if (isWaiting) return;
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    appendMessage('user', text);
+    input.value = ''; input.style.height = 'auto';
+    setInputDisabled(true); showTyping();
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, chatInput: text })
+      });
+      const data = await res.json();
+      removeTyping();
+      const reply = data.reply || '';
+      appendMessage('agent', reply);
+      detectPhase(reply);
+
+      if (reply.includes('ASSESSMENT_COMPLETE') || data.phase === 'complete') {
+        setPhase(4);
+        showCompleteBanner();
+        lockChat();
+        revealPostChatUI();
+        startPolling();
+        return;
+      }
+    } catch(err) {
+      removeTyping();
+      appendMessage('agent', '⚠ Connection error. Check the webhook URL and try again.');
+    }
+    setInputDisabled(false);
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  /* ── POST-CHAT UI REVEAL ── */
+  function revealPostChatUI() {
+    setTimeout(() => {
+      document.getElementById('results-divider').classList.add('visible');
+      document.getElementById('agent-b-narrative').classList.add('visible');
+      document.getElementById('poll-status').classList.add('visible');
+      document.getElementById('results-divider').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 800);
+  }
+
+  /* ── SUPABASE POLLING ── */
+  function startPolling() {
+    pollAttempts = 0;
+    pollTimer = setInterval(pollSupabase, 3000);
+  }
+
+  async function pollSupabase() {
+    pollAttempts++;
+    if (pollAttempts > MAX_POLLS) {
+      clearInterval(pollTimer);
+      document.getElementById('poll-text').textContent = 'Results taking longer than expected. Refresh to check again.';
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/assessments?session_id=eq.${sessionId}&select=*`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      );
+      const rows = await res.json();
+      if (rows && rows.length > 0) {
+        clearInterval(pollTimer);
+        document.getElementById('poll-status').classList.remove('visible');
+        renderResults(rows[0]);
+        document.getElementById('results-section').classList.add('visible');
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch(err) {
+      console.warn('Poll error:', err);
+    }
+  }
+
+  /* ── RENDER RESULTS ── */
+  function renderResults(row) {
+    const score = parseFloat(row.final_score || 0);
+    const isPass = score >= 8.0;
+
+    // Score
+    const scoreEl = document.getElementById('stat-score');
+    scoreEl.textContent = score.toFixed(1);
+    scoreEl.className = 'stat-value' + (isPass ? '' : ' remedial');
+
+    // Profile
+    document.getElementById('stat-profile').textContent = row.learner_profile || '—';
+
+    // Outcome
+    const outcomeEl = document.getElementById('stat-outcome');
+    outcomeEl.textContent = isPass ? t('advOutcome') : t('remOutcome');
+    outcomeEl.className = 'stat-value' + (isPass ? '' : ' remedial');
+    document.getElementById('stat-outcome-sub').textContent = isPass ? t('advSub') : t('remSub');
+
+    // Evaluated topics
+    const evalTopics = (row.evaluated_topics || '').split(',').map(s => s.trim()).filter(Boolean);
+    document.getElementById('evaluated-chips').innerHTML =
+      evalTopics.map(tp => `<span class="chip evaluated">${tp}</span>`).join('');
+
+    // Improvement topics
+    const imp = row.improvement_topics || '';
+    const impEl = document.getElementById('improvement-chips');
+    if (imp.includes('NINGUNO') || imp.includes('SOBRESALIENTE')) {
+      impEl.innerHTML = `<span class="chip none">${t('noGaps')}</span>`;
+    } else {
+      impEl.innerHTML = (imp).split(',').map(s => s.trim()).filter(Boolean)
+        .map(tp => `<span class="chip improvement">${tp}</span>`).join('');
+    }
+
+    // Email — from Agent B payload stored in ai_feedback or separate field
+    const emailBadge = document.getElementById('email-type-badge');
+    emailBadge.textContent = isPass ? t('advancement') : t('remedial');
+    emailBadge.className = 'email-badge' + (isPass ? '' : ' remedial');
+    document.getElementById('email-to').textContent = row.learner_email || '—';
+
+    // Agent B returns email_subject and email_body_html
+    // For now show ai_feedback as fallback if email fields not yet populated
+    if (row.email_subject) {
+      document.getElementById('email-subject').textContent = row.email_subject;
+    }
+    if (row.email_body_html) {
+      document.getElementById('email-body').innerHTML = row.email_body_html;
+    } else if (row.ai_feedback) {
+      document.getElementById('email-subject').textContent = isPass
+        ? `Your CyberCoach results — ${score.toFixed(1)}/10`
+        : `Your CyberCoach results + next steps — ${score.toFixed(1)}/10`;
+      document.getElementById('email-body').innerHTML =
+        `<p>${row.ai_feedback.replace(/\n/g,'</p><p>')}</p>`;
+    }
+  }
+
+  /* ── INIT ── */
+  window.addEventListener('load', () => {
+    appendMessage('agent', "Hi! I'm CyberCoach, your adaptive cybersecurity assessment companion. Before we begin, which language would you prefer — English or Spanish?");
+  });
+</script>
+</body>
+</html>
