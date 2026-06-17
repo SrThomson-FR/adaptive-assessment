@@ -518,7 +518,10 @@
     avatar.textContent = role === 'agent' ? 'CC' : 'U';
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble';
-    bubble.textContent = text.replace(/ASSESSMENT_COMPLETE/g,'').trim();
+    bubble.textContent = text
+      .replace(/ASSESSMENT_COMPLETE/g,'')
+      .replace(/\{[\s\S]*"Final_Score"[\s\S]*\}/g,'')
+      .trim();
     msg.appendChild(avatar);
     msg.appendChild(bubble);
     container.appendChild(msg);
